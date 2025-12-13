@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Control</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>Smart Control System</h1>
+
+    <!-- Sensor Werte -->
+    <div class="values">
+        <div>Luftfeuchtigkeit: <span id="humidity">45%</span></div>
+        <div>Windgeschwindigkeit: <span id="wind">12 km/h</span></div>
+        <div>Luftqualität: <span id="air">Gut</span></div>
+        <div>Temperatur: <span id="temp">22°C</span></div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="controls">
+        <button onclick="toggleDevice(this)">Fenster <span class="circle"></span></button>
+        <button onclick="toggleDevice(this)">Ventilator <span class="circle"></span></button>
+        <button onclick="toggleDevice(this)">Tür <span class="circle"></span></button>
+    </div>
+
+    <!-- Modus -->
+    <div class="mode">
+        <label>Modus:</label>
+        <select id="modeSelect" onchange="changeMode()">
+            <option value="manual">Manuell</option>
+            <option value="auto">Auto</option>
+        </select>
+    </div>
+
+    <!-- Status -->
+    <textarea id="statusBox" readonly>Systemstatus: Test</textarea>
+
+    <!-- All Day -->
+    <div class="schedule">
+        <label>
+            <input type="checkbox" id="allDay" onchange="toggleAllDay()"> All Day
+        </label>
+
+        <select id="allDayMode" class="hidden">
+            <option value="best">Best</option>
+            <option value="eco">Eco</option>
+        </select>
+
+        <div id="timeSlots" class="hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
