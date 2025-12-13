@@ -64,3 +64,9 @@ cd ..
 git add SHVS_Front_End_Server
 git commit -m "Update SHVS_Front_End_Server submodule reference"
 ```
+
+### Webseite starten/node moduels erstellen 
+```bash
+npm install express    
+node server.js
+```
