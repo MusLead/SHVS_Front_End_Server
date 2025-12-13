@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.values div {
+    margin-bottom: 5px;
+}
+
+.controls button {
+    margin: 5px;
+    padding: 10px;
+}
+
+.circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: gray;
+    margin-left: 8px;
+}
+
+.active {
+    background: blue;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+textarea {
+    width: 100%;
+    height: 60px;
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.schedule {
+    margin-top: 15px;
+}
