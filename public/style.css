@@ -1,15 +1,48 @@
 body {
     font-family: Arial, sans-serif;
     padding: 20px;
+    background: #f9f9f9;
+    color: #333;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 28px;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+}
+
+.card {
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .values div {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 16px;
 }
 
 .controls button {
     margin: 5px;
-    padding: 10px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #eee;
+    transition: 0.2s;
+}
+
+.controls button:hover:not(:disabled) {
+    background: #ddd;
+}
+
+.controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .circle {
@@ -19,27 +52,91 @@ body {
     border-radius: 50%;
     background: gray;
     margin-left: 8px;
+    transition: 0.2s;
 }
 
-.active {
-    background: blue;
+.circle.active {
+    background: green;
 }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.status-card {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f4f6f8;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    max-width: 320px;
 }
 
-textarea {
-    width: 100%;
-    height: 60px;
+.status-card div {
+    margin: 4px 0;
+}
+
+.mode {
     margin-top: 10px;
 }
 
-.hidden {
-    display: none;
+.mode select {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
 }
 
 .schedule {
-    margin-top: 15px;
+    margin-top: 20px;
+}
+
+#allDayControls {
+    background: #f0f8ff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #d1e7ff;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#allDayControls label {
+    margin-right: 0;
+    white-space: nowrap;
+}
+
+#allDayControls select {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.schedule-row input,
+.schedule-row select {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.schedule-row button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #e74c3c;
+    color: #fff;
+    cursor: pointer;
+}
+
+.schedule-row button:hover {
+    background: #c0392b;
+}
+
+.hidden {
+    display: none !important;
 }

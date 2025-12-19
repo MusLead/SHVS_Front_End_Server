@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -8,51 +8,67 @@
 </head>
 
 <body>
-
     <h1>Smart Control System</h1>
 
-    <!-- Sensor Werte -->
-    <div class="values">
-        <div>Luftfeuchtigkeit: <span id="humidity">45%</span></div>
-        <div>Windgeschwindigkeit: <span id="wind">12 km/h</span></div>
-        <div>Luftqualität: <span id="air">Gut</span></div>
-        <div>Temperatur: <span id="temp">22°C</span></div>
+    <div class="card">
+        <h3>Sensor Values</h3>
+        <div class="values">
+            <div>Indoor Temperature: <span id="tempIndoor">--</span> °C</div>
+            <div>Indoor Humidity: <span id="humIndoor">--</span> %</div>
+            <div>Indoor Air Quality: <span id="airQualityIndoor">--</span></div>
+            <div>Outdoor Temperature: <span id="tempOutdoor">--</span> °C</div>
+            <div>Outdoor Humidity: <span id="humOutdoor">--</span> %</div>
+            <div>Outdoor Air Quality: <span id="airQualityOutdoor">--</span></div>
+            <div>Wind Speed: <span id="wind">--</span> km/h</div>
+        </div>
     </div>
 
-    <!-- Buttons -->
     <div class="controls">
-        <button onclick="toggleDevice(this)">Fenster <span class="circle"></span></button>
-        <button onclick="toggleDevice(this)">Ventilator <span class="circle"></span></button>
-        <button onclick="toggleDevice(this)">Tür <span class="circle"></span></button>
+        <button data-device="window" onclick="toggleDevice(this)">Window <span class="circle"></span></button>
+        <button data-device="fan" onclick="toggleDevice(this)">Fan <span class="circle"></span></button>
+        <button data-device="door" onclick="toggleDevice(this)">Door <span class="circle"></span></button>
+        <button data-device="absorber" onclick="toggleDevice(this)">Absorber <span class="circle"></span></button>
     </div>
 
-    <!-- Modus -->
     <div class="mode">
-        <label>Modus:</label>
-        <select id="modeSelect" onchange="changeMode()">
-            <option value="manual">Manuell</option>
-            <option value="auto">Auto</option>
+        <label>Mode:</label>
+        <select id="modeSelect" onchange="setMode(this.value)">
+            <option value="2">MANUAL</option>
+            <option value="1">AUTO</option>
         </select>
     </div>
 
-    <!-- Status -->
-    <textarea id="statusBox" readonly>Systemstatus: Test</textarea>
+    <div class="status-card">
+        <div><strong>Mode:</strong> <span id="statusMode">-</span></div>
+        <div><strong>Window:</strong> <span id="statusWindow">-</span></div>
+        <div><strong>Fan:</strong> <span id="statusFan">-</span></div>
+        <div><strong>Door:</strong> <span id="statusDoor">-</span></div>
+        <div><strong>Absorber:</strong> <span id="statusAbsorber">-</span></div>
+    </div>
 
-    <!-- All Day -->
     <div class="schedule">
-        <label>
-            <input type="checkbox" id="allDay" onchange="toggleAllDay()"> All Day
-        </label>
+        <h3>Schedule</h3>
+        <!-- ALL DAY OPTION -->
+        <div id="allDayControls" class="hidden">
+            <label>
+                <input type="checkbox" id="allDayCheck" onchange="toggleAllDay()" checked>
+                All day
+            </label>
+            <label>Mode:</label>
+            <select id="allDayModeSelect">
+                <option value="1">ECO</option>
+                <option value="0">BEST</option>
+            </select>
+        </div>
+        <!-- NORMAL SCHEDULE -->
+        <div id="normalSchedule">
+            <div id="scheduleRows"></div>
+            <button onclick="addScheduleRow()">Add time period</button>
+            <button onclick="sendSchedule()">Send schedule</button>
+            <button onclick="clearSchedule()">Delete schedule</button>
+        </div>
 
-        <select id="allDayMode" class="hidden">
-            <option value="best">Best</option>
-            <option value="eco">Eco</option>
-        </select>
-
-        <div id="timeSlots" class="hidden"></div>
-    </div>
-
-    <script src="script.js"></script>
+        <script src="script.js"></script>
 </body>
 
 </html>
