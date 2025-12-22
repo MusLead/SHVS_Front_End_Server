@@ -4,6 +4,8 @@
 // 2 - MANUAL
 let currentMode = 2; // MANUAL
 
+let isSending = false;
+
 // Actuator states
 const actuators = { window: 0, fan: 0, door: 0, absorber: 0 };
 
@@ -23,7 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Initial fetch and periodic updates
 fetchSensors(); fetchStatus();
-setInterval(fetchSensors, 500); setInterval(fetchStatus, 500);
+setInterval(fetchSensors, 3000);
+setInterval(fetchStatus, 5000);
 
 // Fetch sensor data from server
 async function fetchSensors() {
@@ -40,30 +43,49 @@ async function fetchSensors() {
 }
 
 async function fetchStatus() {
+    if (isSending) return;   // <<< WICHTIG
+
     try {
         const status = await fetch("/api/v1/status").then(r => r.json());
-        currentMode = status.mode;
-        document.getElementById("modeSelect").value = currentMode;
-        Object.assign(actuators, { window: status.window, fan: status.fan, door: status.door, absorber: status.absorber });
 
-        // FIX: Update die UI basierend auf aktuellem Mode
+        currentMode = status.mode;
+        // FIX: AUTO_BEST (0) soll oben als AUTO (1) angezeigt werden
+        const modeSelect = document.getElementById("modeSelect");
+        modeSelect.value = (currentMode === 2) ? 2 : 1;
+
+
+        Object.assign(actuators, {
+            window: status.window,
+            fan: status.fan,
+            door: status.door,
+            absorber: status.absorber
+        });
+
         updateScheduleVisibility();
         updateUI();
-    } catch (e) { console.warn(e); }
+    } catch (e) {
+        console.warn(e);
+    }
 }
 
 function updateUI() {
     document.querySelectorAll(".controls button").forEach(btn => {
         const dev = btn.dataset.device;
-        btn.disabled = currentMode !== 2;
-        btn.querySelector(".circle").classList.toggle("active", actuators[dev] === 1);
+        btn.disabled = currentMode !== 2 || isSending;
+        btn.querySelector(".circle")
+            .classList.toggle("active", actuators[dev] === 1);
     });
-    document.getElementById("statusMode").innerText = currentMode === 2 ? "MANUAL" : currentMode === 1 ? "AUTO_ECO" : "AUTO_BEST";
+
+    document.getElementById("statusMode").innerText =
+        currentMode === 2 ? "MANUAL" :
+            currentMode === 1 ? "AUTO_ECO" : "AUTO_BEST";
+
     document.getElementById("statusWindow").innerText = actuators.window ? "ON" : "OFF";
     document.getElementById("statusFan").innerText = actuators.fan ? "ON" : "OFF";
     document.getElementById("statusDoor").innerText = actuators.door ? "ON" : "OFF";
     document.getElementById("statusAbsorber").innerText = actuators.absorber ? "ON" : "OFF";
 }
+
 
 // FIX: Funktion um Sichtbarkeit des Schedules zu steuern
 function updateScheduleVisibility() {
@@ -96,35 +118,55 @@ function updateScheduleVisibility() {
 }
 
 async function toggleDevice(btn) {
-    if (currentMode !== 2) { alert("Only in MANUAL!"); return; }
+    if (currentMode !== 2) {
+        alert("Only in MANUAL!");
+        return;
+    }
+
     const dev = btn.dataset.device;
-    actuators[dev] = actuators[dev] ? 0 : 1;
+
+    isSending = true;
+    actuators[dev] ^= 1;
     updateUI();
+
     try {
-        const res = await fetch("/api/v1/actuators", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(actuators) });
-        if (!res.ok) { alert(await res.text()); fetchStatus(); }
-    } catch (e) { alert("Connection error"); fetchStatus(); }
+        const res = await fetch("/api/v1/actuators", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(actuators)
+        });
+
+        if (!res.ok) {
+            alert(await res.text());
+        }
+    } catch (e) {
+        alert("Connection error");
+    }
+
+    isSending = false;
+    fetchStatus();
 }
 
 async function setMode(value) {
     const mode = Number(value);
     currentMode = mode;
 
-    if (mode === 1) { // AUTO (ECO) gewählt
-        // AUTOMATISCH All-Day aktivieren
-        document.getElementById("allDayCheck").checked = true;
+    isSending = true;
 
-        // Mode an ESP32 senden (ECO als default)
-        await setAllDayMode(1);
-    } else if (mode === 2) { // MANUAL
-        // Mode an ESP32 senden
-        await setAllDayMode(2);
+    try {
+        await fetch("/api/v1/mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode })
+        });
+    } catch (e) {
+        alert("Failed to set mode");
     }
 
-    // FIX: Sichtbarkeit aktualisieren
-    updateScheduleVisibility();
-    updateUI();
+    isSending = false;
+    fetchStatus();
 }
+
 
 // All-Day Mode senden
 async function setAllDayMode(mode) {

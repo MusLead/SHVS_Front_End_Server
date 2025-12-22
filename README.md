@@ -65,8 +65,28 @@ git add SHVS_Front_End_Server
 git commit -m "Update SHVS_Front_End_Server submodule reference"
 ```
 
-### Webseite starten/node moduels erstellen 
+### Start Webserver/ node modules
 ```bash
 npm install express    
 node server.js
 ```
+
+## Quick Setup
+
+### 1 Set MQTT Broker address
+
+Open **`server.js`** and set the IP address of your MQTT broker:
+
+```js
+const ESP32_IP = "192.168.X.X";
+```
+
+### 2 Startup order
+
+! **Web server, sensors, and actuators must only be used after the following message appears in the monitor:**
+
+```
+MQTT Connected
+```
+
+Only after this message the system is fully operational.

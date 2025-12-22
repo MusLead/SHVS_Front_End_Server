@@ -4,7 +4,7 @@ const app = express();
 const WEBSERVER = "127.0.0.1";
 const PORT = 8080;
 // TODO: Replace with your ESP32 IP address
-const ESP32_IP = "10.249.73.216"; // ESP32-IP
+const ESP32_IP = "10.249.73.136"; // ESP32-IP
 
 app.use(express.static("public"));
 app.use(express.json());
