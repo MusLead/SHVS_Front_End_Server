@@ -3,8 +3,8 @@ const app = express();
 
 const WEBSERVER = "127.0.0.1";
 const PORT = 8080;
-// TODO: Replace with your ESP32 IP address
-const ESP32_IP = "10.249.73.136"; // ESP32-IP
+// Adjust the ESP32 IP address with the HTTP API of your ESP32 device
+const ESP32_IP = "192.168.0.220"; // ESP32-IP
 
 app.use(express.static("public"));
 app.use(express.json());
