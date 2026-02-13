@@ -9,13 +9,13 @@ let isSending = false;
 // Actuator states
 const actuators = { window: 0, fan: 0, door: 0, absorber: 0 };
 
-// FIX: Event-Listener für den All-Day Mode Select hinzufügen
+// Event-Listener for the All-Day Mode Select
 document.addEventListener('DOMContentLoaded', function () {
     const allDayModeSelect = document.getElementById("allDayModeSelect");
     if (allDayModeSelect) {
         allDayModeSelect.addEventListener("change", async function () {
             const mode = Number(this.value);
-            // Prüfen ob All-Day aktiv ist
+            // Check if all Day is active
             if (document.getElementById("allDayCheck").checked) {
                 await setAllDayMode(mode);
             }
@@ -43,13 +43,12 @@ async function fetchSensors() {
 }
 
 async function fetchStatus() {
-    if (isSending) return;   // <<< WICHTIG
+    if (isSending) return;
 
     try {
         const status = await fetch("/api/v1/status").then(r => r.json());
 
         currentMode = status.mode;
-        // FIX: AUTO_BEST (0) soll oben als AUTO (1) angezeigt werden
         const modeSelect = document.getElementById("modeSelect");
         modeSelect.value = (currentMode === 2) ? 2 : 1;
 
@@ -87,28 +86,28 @@ function updateUI() {
 }
 
 
-// FIX: Funktion um Sichtbarkeit des Schedules zu steuern
+// Fuction to adjust visibility of schedule
 function updateScheduleVisibility() {
     const scheduleSection = document.querySelector(".schedule");
     const scheduleTitle = document.querySelector(".schedule h3");
 
     if (currentMode === 2) { // MANUAL
-        // Bei MANUAL alles ausblenden inkl. Titel
+        // If MANUAL --> then hide schedule and title too
         document.getElementById("allDayControls").classList.add("hidden");
         document.getElementById("normalSchedule").classList.add("hidden");
         if (scheduleTitle) scheduleTitle.classList.add("hidden");
-    } else { // AUTO (1 oder 0)
-        // Bei AUTO Titel und All-Day Controls sichtbar
+    } else { // AUTO (1 or 0)
+        // If AUTO title and All-Day Controls visible
         if (scheduleTitle) scheduleTitle.classList.remove("hidden");
         document.getElementById("allDayControls").classList.remove("hidden");
 
-        // Prüfen ob All-Day aktiv ist
+        // Check if All-Day is activ
         const allDay = document.getElementById("allDayCheck").checked;
 
-        // Normal Schedule nur anzeigen wenn All-Day nicht aktiv
+        // Show Schedule only if the All-Day is not active
         document.getElementById("normalSchedule").classList.toggle("hidden", allDay);
 
-        // Mode Selector (ECO/BEST) nur anzeigen wenn All-Day aktiv
+        // Mode Selector (ECO/BEST) only if the All-Day moode is active
         const modeLabel = document.querySelector("#allDayControls label[for='allDayModeSelect']");
         const modeSelect = document.getElementById("allDayModeSelect");
 
@@ -117,6 +116,7 @@ function updateScheduleVisibility() {
     }
 }
 
+// toggle Device
 async function toggleDevice(btn) {
     if (currentMode !== 2) {
         alert("Only in MANUAL!");
@@ -147,6 +147,7 @@ async function toggleDevice(btn) {
     fetchStatus();
 }
 
+// set a new mode
 async function setMode(value) {
     const mode = Number(value);
     currentMode = mode;
@@ -168,7 +169,7 @@ async function setMode(value) {
 }
 
 
-// All-Day Mode senden
+// All-Day Mode send
 async function setAllDayMode(mode) {
     try {
         const res = await fetch("/api/v1/mode", {
@@ -184,13 +185,13 @@ async function setAllDayMode(mode) {
 function toggleAllDay() {
     const allDay = document.getElementById("allDayCheck").checked;
 
-    // FIX: Wenn All-Day aktiviert wird, Mode senden
+    // if All-Day is active then send Mode
     if (allDay) {
         const mode = Number(document.getElementById("allDayModeSelect").value);
         setAllDayMode(mode);
     }
 
-    // FIX: Sichtbarkeit aktualisieren
+    // Update visibility
     updateScheduleVisibility();
 }
 
@@ -217,4 +218,5 @@ async function sendSchedule() {
         if (!res.ok) { alert(await res.text()); return; }
         alert("Schedule sent successfully");
     } catch (e) { alert("Failed"); }
+
 }
