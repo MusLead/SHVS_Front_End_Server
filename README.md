@@ -83,7 +83,7 @@ const ESP32_IP = "192.168.X.X";
 
 ### 2 Startup order
 
-! **Web server, sensors, and actuators must only be used after the following message appears in the monitor:**
+! **Web server (SHVS_Front_End_Server), sensors, and actuators (ESP_Sensors_Actuators) must only be used after the following message appears in the monitor of the ESP_Communcation_Center project:**
 
 ```
 MQTT Connected
