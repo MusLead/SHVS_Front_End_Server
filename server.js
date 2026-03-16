@@ -1,13 +1,19 @@
+const path = require("path");
 const express = require("express");
 const app = express();
 
-const WEBSERVER = "127.0.0.1";
-const PORT = 8080;
+const WEBSERVER = process.env.WEBSERVER || "127.0.0.1";
+const PORT = Number(process.env.PORT) || 8080;
+const PUBLIC_DIR = path.join(__dirname, "public");
 // Adjust the ESP32 IP address with the HTTP API of your ESP32 device
 const ESP32_IP = "192.168.0.130"; // ESP32-IP
 
-app.use(express.static("public"));
+app.use(express.static(PUBLIC_DIR));
 app.use(express.json());
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+});
 
 // --------------------
 // GET: Sensors
