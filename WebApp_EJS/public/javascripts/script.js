@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 fetchSensors();
 fetchStatus();
+
+// Fetch sensors every 3 seconds and status every 5 seconds to keep the UI updated without overwhelming the server.
 setInterval(fetchSensors, 3000);
 setInterval(fetchStatus, 5000);
 
