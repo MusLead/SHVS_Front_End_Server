@@ -1,7 +1,5 @@
 # Dependencies
 node_modules/
-WebApp_EJS/node_modules/
-WebApp_HTML/node_modules/
 
 # IDE
 .vscode/
@@ -12,4 +10,3 @@ WebApp_HTML/node_modules/
 # Logs
 logs/
 *.log
-npm-debug.log*

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+
+    <div class="card">
+      <h3>Sensor Values</h3>
+      <div class="values">
+        <div>Indoor Temperature: <span id="tempIndoor">--</span> °C</div>
+        <div>Indoor Humidity: <span id="humIndoor">--</span> %</div>
+        <div>Indoor Air Quality: <span id="airQualityIndoor">--</span></div>
+        <div>Outdoor Temperature: <span id="tempOutdoor">--</span> °C</div>
+        <div>Outdoor Humidity: <span id="humOutdoor">--</span> %</div>
+        <div>Outdoor Air Quality: <span id="airQualityOutdoor">--</span></div>
+        <div>Wind Speed: <span id="wind">--</span> km/h</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button data-device="window" onclick="toggleDevice(this)">Window <span class="circle"></span></button>
+      <button data-device="fan" onclick="toggleDevice(this)">Fan <span class="circle"></span></button>
+      <button data-device="door" onclick="toggleDevice(this)">Door <span class="circle"></span></button>
+      <button data-device="absorber" onclick="toggleDevice(this)">Absorber <span class="circle"></span></button>
+    </div>
+
+    <div class="mode">
+      <label>Mode:</label>
+      <select id="modeSelect" onchange="setMode(this.value)">
+        <option value="2">MANUAL</option>
+        <option value="1">AUTO</option>
+      </select>
+    </div>
+
+    <div class="status-card">
+      <div><strong>Mode:</strong> <span id="statusMode">-</span></div>
+      <div><strong>Window:</strong> <span id="statusWindow">-</span></div>
+      <div><strong>Fan:</strong> <span id="statusFan">-</span></div>
+      <div><strong>Door:</strong> <span id="statusDoor">-</span></div>
+      <div><strong>Absorber:</strong> <span id="statusAbsorber">-</span></div>
+    </div>
+
+    <div class="schedule">
+      <h3>Schedule</h3>
+      <div id="allDayControls" class="hidden">
+        <label>
+          <input type="checkbox" id="allDayCheck" onchange="toggleAllDay()" checked />
+          All day
+        </label>
+        <label for="allDayModeSelect">Mode:</label>
+        <select id="allDayModeSelect">
+          <option value="1">ECO</option>
+          <option value="0">BEST</option>
+        </select>
+      </div>
+
+      <div id="normalSchedule">
+        <div id="scheduleRows"></div>
+        <button onclick="addScheduleRow()">Add time period</button>
+        <button onclick="sendSchedule()">Send schedule</button>
+        <button onclick="clearSchedule()">Delete schedule</button>
+      </div>
+    </div>
+
+    <script src="/javascripts/apiCalls.js"></script>
+    <script src="/javascripts/script.js"></script>
+  </body>
+</html>
