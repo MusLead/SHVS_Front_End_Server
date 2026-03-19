@@ -62,10 +62,10 @@ This app follows the standard Express generator structure:
 - `bin/www`: HTTP server startup
 - `routes/index.js`: page route for the main dashboard
 - `routes/api.js`: REST API routes under `/api/v1`
+- `controllers/apiCalls.js`: browser-side API helper served explicitly by Express
 - `controllers/ventilationController.js`: request validation and response handling
 - `services/esp32Client.js`: communication with the ESP32 upstream API
 - `views/index.ejs`: SHVS dashboard page
-- `public/javascripts/apiCalls.js`: browser-side API helper
 - `public/javascripts/script.js`: browser UI logic
 - `public/stylesheets/style.css`: page styling
 

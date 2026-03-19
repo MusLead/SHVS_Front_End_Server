@@ -19,6 +19,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Expose only the browser-side API helper, not the full controllers directory.
+app.get('/controllers/apiCalls.js', function(req, res) {
+  res.sendFile(path.join(__dirname, 'controllers', 'apiCalls.js'));
+});
+
 app.use('/', indexRouter);
 app.use('/api/v1', apiRouter);
 
