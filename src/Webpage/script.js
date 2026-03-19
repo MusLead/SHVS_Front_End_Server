@@ -31,7 +31,7 @@ setInterval(fetchStatus, 5000);
 // Fetch sensor data from server
 async function fetchSensors() {
     try {
-        const data = await fetch("/api/v1/sensors").then(r => r.json());
+        const data = await apiCalls.getSensors();
         document.getElementById("tempIndoor").innerText = data.indoor.Temp.toFixed(1);
         document.getElementById("humIndoor").innerText = data.indoor.H.toFixed(1);
         document.getElementById("airQualityIndoor").innerText = data.indoor.AQ;
@@ -46,7 +46,7 @@ async function fetchStatus() {
     if (isSending) return;
 
     try {
-        const status = await fetch("/api/v1/status").then(r => r.json());
+        const status = await apiCalls.getStatus();
 
         currentMode = status.mode;
         const modeSelect = document.getElementById("modeSelect");
@@ -123,6 +123,12 @@ async function toggleDevice(btn) {
         return;
     }
 
+    if(btn.dataset.device === "fan" && actuators.window === 0) {
+        document.getElementById("statusFan").innerText = "OFF";
+        alert("Open the window first!");
+        return;
+    }
+
     const dev = btn.dataset.device;
 
     isSending = true;
@@ -130,17 +136,9 @@ async function toggleDevice(btn) {
     updateUI();
 
     try {
-        const res = await fetch("/api/v1/actuators", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(actuators)
-        });
-
-        if (!res.ok) {
-            alert(await res.text());
-        }
+        await apiCalls.setActuators(actuators);
     } catch (e) {
-        alert("Connection error");
+        alert(e.message || "Connection error");
     }
 
     isSending = false;
@@ -155,31 +153,20 @@ async function setMode(value) {
     isSending = true;
 
     try {
-        await fetch("/api/v1/mode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode })
-        });
+        await apiCalls.setMode(mode);
     } catch (e) {
-        alert("Failed to set mode");
+        alert(e.message || "Failed to set mode");
     }
 
     isSending = false;
     fetchStatus();
 }
 
-
 // All-Day Mode send
 async function setAllDayMode(mode) {
     try {
-        const res = await fetch("/api/v1/mode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode: Number(mode) })
-        });
-
-        if (!res.ok) alert(await res.text());
-    } catch (e) { alert("Failed to set mode"); }
+        await apiCalls.setMode(Number(mode));
+    } catch (e) { alert(e.message || "Failed to set mode"); }
 }
 
 function toggleAllDay() {
@@ -214,9 +201,8 @@ async function sendSchedule() {
         if (start && end) periods.push({ start, end, mode });
     });
     try {
-        const res = await fetch("/api/v1/schedule", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ periods }) });
-        if (!res.ok) { alert(await res.text()); return; }
+        await apiCalls.setSchedule(periods);
         alert("Schedule sent successfully");
-    } catch (e) { alert("Failed"); }
+    } catch (e) { alert(e.message || "Failed"); }
 
 }

@@ -65,7 +65,7 @@ git add SHVS_Front_End_Server
 git commit -m "Update SHVS_Front_End_Server submodule reference"
 ```
 
-### Start Webserver/ node modules
+### Start Webserver / node modules
 ```bash
 npm install express    
 node server.js
@@ -73,15 +73,41 @@ node server.js
 
 ## Quick Setup
 
-### 1 Set MQTT Broker address
+### 1 Configure the ESP32 API upstream
 
-Open **`server.js`** and set the IP address of your MQTT broker:
+The browser talks only to the Express server. Express then forwards REST API calls to the ESP32 device.
 
-```js
-const ESP32_IP = "192.168.X.X";
+Set the ESP32 address with an environment variable:
+
+```bash
+ESP32_IP=192.168.X.X node server.js
 ```
 
-### 2 Startup order
+If you need a custom protocol or port, use `ESP32_BASE_URL` instead:
+
+```bash
+ESP32_BASE_URL=http://192.168.X.X:80 node server.js
+```
+
+Default fallback:
+
+```js
+http://192.168.0.130
+```
+
+### 2 Backend structure
+
+The backend is organized so Express is the public REST API layer:
+
+- `server.js`: startup/bootstrap only
+- `src/app.js`: Express app setup and middleware
+- `src/Webpage/`: static webpage files served by Express
+- `src/controllers/apiCalls.js`: browser-side API helper served explicitly to the webpage
+- `src/routes/apiV1.js`: REST route definitions
+- `src/controllers/ventilationController.js`: request validation and response handling
+- `src/services/esp32Client.js`: communication with the ESP32 upstream API
+
+### 3 Startup order
 
 ! **Web server (SHVS_Front_End_Server), sensors, and actuators (ESP_Sensors_Actuators) must only be used after the following message appears in the monitor of the ESP_Communcation_Center project:**
 
