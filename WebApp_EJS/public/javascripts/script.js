@@ -7,7 +7,9 @@ let currentMode = 2;
 let isSending = false;
 
 const actuators = { window: 0, fan: 0, door: 0, absorber: 0 };
-const espConnections = { indoor: false, outdoor: false };
+const espConnections = { indoor: null, outdoor: null };
+const apiAvailability = { sensors: true, status: true };
+let currentStatusWhy = "";
 
 document.addEventListener("DOMContentLoaded", function () {
   const allDayModeSelect = document.getElementById("allDayModeSelect");
@@ -46,6 +48,7 @@ function renderSensorValue(elementId, value, digits) {
 async function fetchSensors() {
   try {
     const data = await apiCalls.getSensors();
+    apiAvailability.sensors = true;
     espConnections.indoor = Boolean(data.connections && data.connections.indoor);
     espConnections.outdoor = Boolean(data.connections && data.connections.outdoor);
     renderSensorValue("tempIndoor", data.indoor.Temp, 1);
@@ -55,18 +58,21 @@ async function fetchSensors() {
     renderSensorValue("humOutdoor", data.outdoor.H, 1);
     renderSensorValue("airQualityOutdoor", data.outdoor.AQ);
     renderSensorValue("wind", data.wind_speed, 1);
+    updateWarnings();
   } catch (e) {
+    apiAvailability.sensors = false;
+    updateWarnings();
     console.warn(e);
   }
 }
 
 function isDeviceConnected(device) {
   if (device === "window" || device === "door") {
-    return espConnections.indoor;
+    return espConnections.indoor === true;
   }
 
   if (device === "fan" || device === "absorber") {
-    return espConnections.outdoor;
+    return espConnections.outdoor === true;
   }
 
   return true;
@@ -77,20 +83,24 @@ async function fetchStatus() {
 
   try {
     const status = await apiCalls.getStatus();
+    apiAvailability.status = true;
 
     currentMode = status.mode;
+    currentStatusWhy = typeof status.why === "string" ? status.why : "";
     document.getElementById("modeSelect").value = currentMode === 2 ? 2 : 1;
 
     Object.assign(actuators, {
       window: status.window,
-      fan: status.fan,
       door: status.door,
+      fan: status.fan,
       absorber: status.absorber
     });
 
     updateScheduleVisibility();
     updateUI();
   } catch (e) {
+    apiAvailability.status = false;
+    updateWarnings();
     console.warn(e);
   }
 }
@@ -105,10 +115,72 @@ function updateUI() {
   document.getElementById("statusMode").innerText =
     currentMode === 2 ? "MANUAL" : currentMode === 1 ? "AUTO_ECO" : "AUTO_BEST";
 
-  document.getElementById("statusWindow").innerText = actuators.window ? "ON" : "OFF";
+  document.getElementById("statusWindow").innerText = actuators.window ? "OPEN" : "CLOSED";
   document.getElementById("statusFan").innerText = actuators.fan ? "ON" : "OFF";
-  document.getElementById("statusDoor").innerText = actuators.door ? "ON" : "OFF";
+  document.getElementById("statusDoor").innerText = actuators.door ? "OPEN" : "CLOSED";
   document.getElementById("statusAbsorber").innerText = actuators.absorber ? "ON" : "OFF";
+
+  updateStatusWhy();
+  updateWarnings();
+}
+
+function updateStatusWhy() {
+  const statusWhy = document.getElementById("statusWhy");
+
+  if (!statusWhy) return;
+
+  if (currentMode === 2) {
+    statusWhy.innerText = "Manual Mode, no Status explanation!";
+    return;
+  }
+
+  if (currentStatusWhy) {
+    statusWhy.innerText = currentStatusWhy;
+    return;
+  }
+
+  statusWhy.innerText = "Automatic mode active. Waiting for the status explanation from the ESP.";
+}
+
+function updateWarnings() {
+  const warningPanel = document.getElementById("warningPanel");
+  const warningSummary = document.getElementById("warningSummary");
+  const espCommunicationPanel = document.getElementById("espCommunicationPanel");
+  const espWarningList = document.getElementById("espWarningList");
+
+  if (!warningPanel || !warningSummary || !espCommunicationPanel || !espWarningList) return;
+
+  const warnings = [];
+
+  if (!apiAvailability.sensors || !apiAvailability.status) {
+    warnings.push("Communication with the ESP controller API is cut off.");
+  }
+
+  if (apiAvailability.sensors && espConnections.indoor === false) {
+    warnings.push("Communication with the Indoor ESP is cut off.");
+  }
+
+  if (apiAvailability.sensors && espConnections.outdoor === false) {
+    warnings.push("Communication with the Outdoor ESP is cut off.");
+  }
+
+  warningPanel.classList.toggle("hidden", warnings.length === 0);
+  espCommunicationPanel.classList.toggle("hidden", warnings.length === 0);
+
+  if (warnings.length === 0) {
+    warningSummary.innerText = "No warnings at the moment.";
+    espWarningList.innerHTML = "";
+    return;
+  }
+
+  warningSummary.innerText =
+    warnings.length === 1 ? "1 warning requires attention." : `${warnings.length} warnings require attention.`;
+
+  espWarningList.innerHTML = warnings
+    .map(function (warning) {
+      return `<div class="warning-item">${warning}</div>`;
+    })
+    .join("");
 }
 
 function updateScheduleVisibility() {

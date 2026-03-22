@@ -21,6 +21,23 @@ h1 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
+.panel-stack {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.panel-card {
+  background: #fff;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.panel-card h3 {
+  margin: 0 0 10px;
+}
+
 .values div {
   margin-bottom: 8px;
   font-size: 16px;
@@ -60,16 +77,54 @@ h1 {
 }
 
 .status-card {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 10px;
-  background: #f4f6f8;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   max-width: 320px;
 }
 
 .status-card div {
   margin: 4px 0;
+}
+
+.status-panel {
+  border-left: 4px solid #457b9d;
+}
+
+.status-panel p {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f4f8fb;
+  border: 1px solid #cfe1ee;
+  line-height: 1.5;
+}
+
+.warning-panel {
+  border-left: 4px solid #e76f51;
+  background: #fff7f4;
+}
+
+.warning-panel p {
+  margin: 0;
+}
+
+.warning-subpanel {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #f3c4b8;
+}
+
+.warning-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.warning-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff1ec;
+  border: 1px solid #f1b7a6;
 }
 
 .mode {
@@ -139,4 +194,14 @@ h1 {
 
 .hidden {
   display: none !important;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 16px;
+  }
+
+  .status-card {
+    max-width: none;
+  }
 }

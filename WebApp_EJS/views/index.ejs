@@ -37,12 +37,30 @@
       </select>
     </div>
 
-    <div class="status-card">
-      <div><strong>Mode:</strong> <span id="statusMode">-</span></div>
-      <div><strong>Window:</strong> <span id="statusWindow">-</span></div>
-      <div><strong>Fan:</strong> <span id="statusFan">-</span></div>
-      <div><strong>Door:</strong> <span id="statusDoor">-</span></div>
-      <div><strong>Absorber:</strong> <span id="statusAbsorber">-</span></div>
+    <div class="panel-stack">
+      <section id="warningPanel" class="panel-card warning-panel hidden">
+        <h3>Warning Panel</h3>
+        <p id="warningSummary">No warnings at the moment.</p>
+
+        <div id="espCommunicationPanel" class="warning-subpanel hidden">
+          <strong>ESP Communication Warning</strong>
+          <div id="espWarningList" class="warning-list"></div>
+        </div>
+      </section>
+
+      <section class="panel-card status-panel">
+        <h3>Status Panel</h3>
+        <p id="statusWhy">Manual Mode, no Status explanation!</p>
+      </section>
+
+      <section class="panel-card status-card">
+        <h3>Current System Status</h3>
+        <div><strong>Mode:</strong> <span id="statusMode">-</span></div>
+        <div><strong>Window:</strong> <span id="statusWindow">-</span></div>
+        <div><strong>Fan:</strong> <span id="statusFan">-</span></div>
+        <div><strong>Door:</strong> <span id="statusDoor">-</span></div>
+        <div><strong>Absorber:</strong> <span id="statusAbsorber">-</span></div>
+      </section>
     </div>
 
     <div class="schedule">
