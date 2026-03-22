@@ -7,6 +7,7 @@ let currentMode = 2;
 let isSending = false;
 
 const actuators = { window: 0, fan: 0, door: 0, absorber: 0 };
+const espConnections = { indoor: false, outdoor: false };
 
 document.addEventListener("DOMContentLoaded", function () {
   const allDayModeSelect = document.getElementById("allDayModeSelect");
@@ -45,6 +46,8 @@ function renderSensorValue(elementId, value, digits) {
 async function fetchSensors() {
   try {
     const data = await apiCalls.getSensors();
+    espConnections.indoor = Boolean(data.connections && data.connections.indoor);
+    espConnections.outdoor = Boolean(data.connections && data.connections.outdoor);
     renderSensorValue("tempIndoor", data.indoor.Temp, 1);
     renderSensorValue("humIndoor", data.indoor.H, 1);
     renderSensorValue("airQualityIndoor", data.indoor.AQ);
@@ -55,6 +58,18 @@ async function fetchSensors() {
   } catch (e) {
     console.warn(e);
   }
+}
+
+function isDeviceConnected(device) {
+  if (device === "window" || device === "door") {
+    return espConnections.indoor;
+  }
+
+  if (device === "fan" || device === "absorber") {
+    return espConnections.outdoor;
+  }
+
+  return true;
 }
 
 async function fetchStatus() {
@@ -122,6 +137,16 @@ function updateScheduleVisibility() {
 async function toggleDevice(btn) {
   if (currentMode !== 2) {
     alert("Only in MANUAL!");
+    return;
+  }
+
+  if (!isDeviceConnected(btn.dataset.device)) {
+    if (btn.dataset.device === "window" || btn.dataset.device === "door") {
+      alert("Indoor ESP is not connected. It is not possible to control the window or door.");
+      return;
+    }
+
+    alert("Outdoor ESP is not connected. It is not possible to control the fan or absorber.");
     return;
   }
 
