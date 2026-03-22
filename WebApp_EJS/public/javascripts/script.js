@@ -12,10 +12,11 @@ const apiAvailability = { sensors: true, status: true };
 const controlState = {
   scheduleConfigured: false,
   scheduleActive: false,
-  scheduleInactiveManualOverride: false,
+  scheduleHoldingState: false,
   manualControlAllowed: false
 };
 let currentStatusWhy = "";
+let scheduleLoaded = false;
 
 document.addEventListener("DOMContentLoaded", function () {
   const allDayModeSelect = document.getElementById("allDayModeSelect");
@@ -95,7 +96,7 @@ async function fetchStatus() {
     currentStatusWhy = typeof status.why === "string" ? status.why : "";
     controlState.scheduleConfigured = Boolean(status.scheduleConfigured);
     controlState.scheduleActive = Boolean(status.scheduleActive);
-    controlState.scheduleInactiveManualOverride = Boolean(status.scheduleInactiveManualOverride);
+    controlState.scheduleHoldingState = Boolean(status.scheduleHoldingState);
     controlState.manualControlAllowed = Boolean(status.manualControlAllowed);
     document.getElementById("modeSelect").value = currentMode === 2 ? 2 : 1;
 
@@ -108,11 +109,15 @@ async function fetchStatus() {
 
     updateScheduleVisibility();
     updateUI();
+
+    if (!scheduleLoaded) {
+      await loadSchedule();
+    }
   } catch (e) {
     apiAvailability.status = false;
     controlState.scheduleConfigured = false;
     controlState.scheduleActive = false;
-    controlState.scheduleInactiveManualOverride = false;
+    controlState.scheduleHoldingState = false;
     controlState.manualControlAllowed = false;
     updateUI();
     updateWarnings();
@@ -163,7 +168,7 @@ function updateControlNotice() {
 
   if (!controlNotice) return;
 
-  if (!controlState.scheduleInactiveManualOverride) {
+  if (!controlState.scheduleHoldingState) {
     controlNotice.classList.add("hidden");
     controlNotice.innerText = "";
     return;
@@ -273,7 +278,7 @@ async function toggleDevice(btn) {
   }
 
   isSending = false;
-  fetchStatus();
+  await fetchStatus();
 }
 
 async function setMode(value) {
@@ -289,12 +294,15 @@ async function setMode(value) {
   }
 
   isSending = false;
-  fetchStatus();
+  await fetchStatus();
+  await loadSchedule();
 }
 
 async function setAllDayMode(mode) {
   try {
     await apiCalls.setMode(Number(mode));
+    await fetchStatus();
+    await loadSchedule();
   } catch (e) {
     alert(e.message || "Failed to set mode");
   }
@@ -319,6 +327,41 @@ function addScheduleRow() {
   container.appendChild(row);
 }
 
+async function loadSchedule() {
+  const scheduleRows = document.getElementById("scheduleRows");
+  const allDayCheck = document.getElementById("allDayCheck");
+  const allDayModeSelect = document.getElementById("allDayModeSelect");
+
+  if (!scheduleRows || !allDayCheck || !allDayModeSelect) return;
+
+  try {
+    const schedule = await apiCalls.getSchedule();
+    const periods = Array.isArray(schedule.periods) ? schedule.periods : [];
+
+    scheduleRows.innerHTML = "";
+
+    if (periods.length === 0) {
+      allDayCheck.checked = true;
+      allDayModeSelect.value = String(currentMode === 0 ? 0 : 1);
+    } else {
+      allDayCheck.checked = false;
+
+      periods.forEach(function (period) {
+        const row = document.createElement("div");
+        row.className = "schedule-row";
+        row.innerHTML = `<input type="time" class="start" value="${period.start || "08:00"}"><input type="time" class="end" value="${period.end || "12:00"}"><select class="mode"><option value="1">AUTO_ECO</option><option value="0">AUTO_BEST</option></select><button onclick="this.parentElement.remove()">X</button>`;
+        row.querySelector(".mode").value = String(Number(period.mode));
+        scheduleRows.appendChild(row);
+      });
+    }
+
+    scheduleLoaded = true;
+    updateScheduleVisibility();
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
 function clearSchedule() {
   document.getElementById("scheduleRows").innerHTML = "";
   sendSchedule();
@@ -340,6 +383,8 @@ async function sendSchedule() {
 
   try {
     await apiCalls.setSchedule(periods);
+    await fetchStatus();
+    await loadSchedule();
     alert("Schedule sent successfully");
   } catch (e) {
     alert(e.message || "Failed");
