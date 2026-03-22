@@ -29,16 +29,29 @@ fetchStatus();
 setInterval(fetchSensors, 3000);
 setInterval(fetchStatus, 5000);
 
+function renderSensorValue(elementId, value, digits) {
+  const element = document.getElementById(elementId);
+
+  if (!element) return;
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    element.innerText = typeof digits === "number" ? value.toFixed(digits) : String(value);
+    return;
+  }
+
+  element.innerText = "--";
+}
+
 async function fetchSensors() {
   try {
     const data = await apiCalls.getSensors();
-    document.getElementById("tempIndoor").innerText = data.indoor.Temp.toFixed(1);
-    document.getElementById("humIndoor").innerText = data.indoor.H.toFixed(1);
-    document.getElementById("airQualityIndoor").innerText = data.indoor.AQ;
-    document.getElementById("tempOutdoor").innerText = data.outdoor.Temp.toFixed(1);
-    document.getElementById("humOutdoor").innerText = data.outdoor.H.toFixed(1);
-    document.getElementById("airQualityOutdoor").innerText = data.outdoor.AQ;
-    document.getElementById("wind").innerText = data.wind_speed.toFixed(1);
+    renderSensorValue("tempIndoor", data.indoor.Temp, 1);
+    renderSensorValue("humIndoor", data.indoor.H, 1);
+    renderSensorValue("airQualityIndoor", data.indoor.AQ);
+    renderSensorValue("tempOutdoor", data.outdoor.Temp, 1);
+    renderSensorValue("humOutdoor", data.outdoor.H, 1);
+    renderSensorValue("airQualityOutdoor", data.outdoor.AQ);
+    renderSensorValue("wind", data.wind_speed, 1);
   } catch (e) {
     console.warn(e);
   }
