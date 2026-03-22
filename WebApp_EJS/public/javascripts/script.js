@@ -9,6 +9,12 @@ let isSending = false;
 const actuators = { window: 0, fan: 0, door: 0, absorber: 0 };
 const espConnections = { indoor: null, outdoor: null };
 const apiAvailability = { sensors: true, status: true };
+const controlState = {
+  scheduleConfigured: false,
+  scheduleActive: false,
+  scheduleInactiveManualOverride: false,
+  manualControlAllowed: false
+};
 let currentStatusWhy = "";
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -87,6 +93,10 @@ async function fetchStatus() {
 
     currentMode = status.mode;
     currentStatusWhy = typeof status.why === "string" ? status.why : "";
+    controlState.scheduleConfigured = Boolean(status.scheduleConfigured);
+    controlState.scheduleActive = Boolean(status.scheduleActive);
+    controlState.scheduleInactiveManualOverride = Boolean(status.scheduleInactiveManualOverride);
+    controlState.manualControlAllowed = Boolean(status.manualControlAllowed);
     document.getElementById("modeSelect").value = currentMode === 2 ? 2 : 1;
 
     Object.assign(actuators, {
@@ -100,6 +110,11 @@ async function fetchStatus() {
     updateUI();
   } catch (e) {
     apiAvailability.status = false;
+    controlState.scheduleConfigured = false;
+    controlState.scheduleActive = false;
+    controlState.scheduleInactiveManualOverride = false;
+    controlState.manualControlAllowed = false;
+    updateUI();
     updateWarnings();
     console.warn(e);
   }
@@ -108,7 +123,7 @@ async function fetchStatus() {
 function updateUI() {
   document.querySelectorAll(".controls button").forEach(function (btn) {
     const dev = btn.dataset.device;
-    btn.disabled = currentMode !== 2 || isSending;
+    btn.disabled = !controlState.manualControlAllowed || isSending;
     btn.querySelector(".circle").classList.toggle("active", actuators[dev] === 1);
   });
 
@@ -121,6 +136,7 @@ function updateUI() {
   document.getElementById("statusAbsorber").innerText = actuators.absorber ? "ON" : "OFF";
 
   updateStatusWhy();
+  updateControlNotice();
   updateWarnings();
 }
 
@@ -140,6 +156,22 @@ function updateStatusWhy() {
   }
 
   statusWhy.innerText = "Automatic mode active. Waiting for the status explanation from the ESP.";
+}
+
+function updateControlNotice() {
+  const controlNotice = document.getElementById("controlNotice");
+
+  if (!controlNotice) return;
+
+  if (!controlState.scheduleInactiveManualOverride) {
+    controlNotice.classList.add("hidden");
+    controlNotice.innerText = "";
+    return;
+  }
+
+  controlNotice.classList.remove("hidden");
+  controlNotice.innerText =
+    "Schedule inactive: manual override is active until the next schedule period starts.";
 }
 
 function updateWarnings() {
@@ -207,8 +239,8 @@ function updateScheduleVisibility() {
 }
 
 async function toggleDevice(btn) {
-  if (currentMode !== 2) {
-    alert("Only in MANUAL!");
+  if (!controlState.manualControlAllowed) {
+    alert("Manual control is only available in MANUAL mode or while the schedule is inactive.");
     return;
   }
 
