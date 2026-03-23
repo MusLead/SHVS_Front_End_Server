@@ -15,6 +15,7 @@ const controlState = {
   scheduleHoldingState: false,
   manualControlAllowed: false
 };
+let currentStatusHeadline = "";
 let currentStatusWhy = "";
 let scheduleLoaded = false;
 
@@ -93,6 +94,7 @@ async function fetchStatus() {
     apiAvailability.status = true;
 
     currentMode = status.mode;
+    currentStatusHeadline = typeof status.whyHeadline === "string" ? status.whyHeadline : "";
     currentStatusWhy = typeof status.why === "string" ? status.why : "";
     controlState.scheduleConfigured = Boolean(status.scheduleConfigured);
     controlState.scheduleActive = Boolean(status.scheduleActive);
@@ -140,27 +142,50 @@ function updateUI() {
   document.getElementById("statusDoor").innerText = actuators.door ? "OPEN" : "CLOSED";
   document.getElementById("statusAbsorber").innerText = actuators.absorber ? "ON" : "OFF";
 
-  updateStatusWhy();
+  updateStatusPanel();
   updateControlNotice();
   updateWarnings();
 }
 
-function updateStatusWhy() {
-  const statusWhy = document.getElementById("statusWhy");
-
-  if (!statusWhy) return;
+function getStatusHeadlineText() {
+  if (currentStatusHeadline) {
+    return currentStatusHeadline;
+  }
 
   if (currentMode === 2) {
-    statusWhy.innerText = "Manual Mode, no Status explanation!";
-    return;
+    return "You are in control";
   }
 
+  if (controlState.scheduleHoldingState) {
+    return "Take over for now";
+  }
+
+  return "System update";
+}
+
+function getStatusDetailText() {
   if (currentStatusWhy) {
-    statusWhy.innerText = currentStatusWhy;
-    return;
+    return currentStatusWhy;
   }
 
-  statusWhy.innerText = "Automatic mode active. Waiting for the status explanation from the ESP.";
+  if (currentMode === 2) {
+    return "Manual Mode, no Status explanation!";
+  }
+
+  return "Automatic mode active. Waiting for the status explanation from the ESP.";
+}
+
+function updateStatusPanel() {
+  const statusHeadline = document.getElementById("statusHeadline");
+  const statusWhy = document.getElementById("statusWhy");
+
+  if (statusHeadline) {
+    statusHeadline.innerText = getStatusHeadlineText();
+  }
+
+  if (statusWhy) {
+    statusWhy.innerText = getStatusDetailText();
+  }
 }
 
 function updateControlNotice() {
@@ -319,11 +344,59 @@ function toggleAllDay() {
   updateScheduleVisibility();
 }
 
-function addScheduleRow() {
-  const container = document.getElementById("scheduleRows");
+function timeToMinutes(timeText) {
+  const parts = typeof timeText === "string" ? timeText.split(":") : [];
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (parts.length !== 2 || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(totalMinutes) {
+  const minutesInDay = 24 * 60;
+  const normalized = ((totalMinutes % minutesInDay) + minutesInDay) % minutesInDay;
+  const hours = Math.floor(normalized / 60);
+  const minutes = normalized % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function createScheduleRow(start, end, mode) {
   const row = document.createElement("div");
   row.className = "schedule-row";
-  row.innerHTML = '<input type="time" class="start" value="08:00"><input type="time" class="end" value="12:00"><select class="mode"><option value="1">AUTO_ECO</option><option value="0">AUTO_BEST</option></select><button onclick="this.parentElement.remove()">X</button>';
+  row.innerHTML = `<input type="time" class="start" value="${start}"><input type="time" class="end" value="${end}"><select class="mode"><option value="1">AUTO_ECO</option><option value="0">AUTO_BEST</option></select><button onclick="this.parentElement.remove()">X</button>`;
+  row.querySelector(".mode").value = String(Number(mode));
+  return row;
+}
+
+function getNextScheduleSlot() {
+  const rows = Array.from(document.querySelectorAll(".schedule-row"));
+
+  if (rows.length === 0) {
+    return { start: "08:00", end: "09:00", mode: 1 };
+  }
+
+  const lastRow = rows[rows.length - 1];
+  const lastEnd = timeToMinutes(lastRow.querySelector(".end")?.value);
+  const lastMode = Number(lastRow.querySelector(".mode")?.value);
+  const nextStartMinutes = (lastEnd === null ? 8 * 60 : lastEnd + 60);
+  const nextEndMinutes = nextStartMinutes + 60;
+
+  return {
+    start: minutesToTime(nextStartMinutes),
+    end: minutesToTime(nextEndMinutes),
+    mode: Number.isNaN(lastMode) ? 1 : lastMode
+  };
+}
+
+function addScheduleRow() {
+  const container = document.getElementById("scheduleRows");
+  const nextSlot = getNextScheduleSlot();
+  const row = createScheduleRow(nextSlot.start, nextSlot.end, nextSlot.mode);
   container.appendChild(row);
 }
 
@@ -347,10 +420,7 @@ async function loadSchedule() {
       allDayCheck.checked = false;
 
       periods.forEach(function (period) {
-        const row = document.createElement("div");
-        row.className = "schedule-row";
-        row.innerHTML = `<input type="time" class="start" value="${period.start || "08:00"}"><input type="time" class="end" value="${period.end || "12:00"}"><select class="mode"><option value="1">AUTO_ECO</option><option value="0">AUTO_BEST</option></select><button onclick="this.parentElement.remove()">X</button>`;
-        row.querySelector(".mode").value = String(Number(period.mode));
+        const row = createScheduleRow(period.start || "08:00", period.end || "09:00", Number(period.mode));
         scheduleRows.appendChild(row);
       });
     }

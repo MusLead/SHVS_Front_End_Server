@@ -98,13 +98,27 @@ h1 {
   border-left: 4px solid #457b9d;
 }
 
-.status-panel p {
+.status-headline,
+.status-detail {
   margin: 0;
   padding: 12px;
   border-radius: 8px;
+  line-height: 1.5;
+}
+
+.status-headline {
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #eef7ff, #f5fbff);
+  border: 1px solid #c4dced;
+  color: #1d5677;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.status-detail {
   background: #f4f8fb;
   border: 1px solid #cfe1ee;
-  line-height: 1.5;
+  color: #35566b;
 }
 
 .warning-panel {
