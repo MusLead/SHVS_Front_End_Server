@@ -36,9 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
 fetchSensors();
 fetchStatus();
 
-// Fetch sensors every 3 seconds and status every 5 seconds to keep the UI updated without overwhelming the server.
+// Fetch sensors every 3 seconds and status every second so the panel keeps up with the control loop.
 setInterval(fetchSensors, 3000);
-setInterval(fetchStatus, 5000);
+setInterval(fetchStatus, 1000);
 
 function renderSensorValue(elementId, value, digits) {
   const element = document.getElementById(elementId);
